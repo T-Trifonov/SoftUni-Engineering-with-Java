@@ -1,4 +1,4 @@
-package A_StacksAndQueues.Exercise;
+package A_StacksAndQueues.LAB;
 
 import java.util.ArrayDeque;
 import java.util.Scanner;
@@ -13,28 +13,45 @@ public class T07SimpleTextEditor {
         ArrayDeque<String> stack = new ArrayDeque<>();
 
         for (int i = 1; i <= n; i++) {
-            String command = scanner.nextLine();
 
-            if (command.startsWith("1")){
-                stack.push(currentText.toString());
-                String textToAppend = command.split("\\s+")[1];
-                currentText.append(textToAppend);
+            String[] command = scanner.nextLine().split("\\s+");
 
-            } else if (command.startsWith("2")){
-                stack.push(currentText.toString());
+            switch (command[0]) {
+                case ("1"):
+                    stack.push(currentText.toString());
+                    String textToAppend = command[1];
+                    currentText.append(textToAppend);
 
-                int count = Integer.parseInt(command.split(" ")[1]);
-                int startIndexDelete = currentText.length()-count;
-                currentText.delete( startIndexDelete,currentText.length());
-            } else if (command.startsWith("3")){
-                int index = Integer.parseInt(command.split("\\s+")[1]);
-                System.out.println(currentText.charAt(index-1));
-            } else if (command.equals("4")){
-                if (!stack.isEmpty()) {
+                    break;
 
-                    String last = stack.pop();
-                    currentText=new StringBuilder(last);
-                }
+                case ("2"):
+
+                    if (currentText.length()>0) {
+                        stack.push(currentText.toString());
+                    }
+
+                    int count = Integer.parseInt(command[1]);
+                    int startIndexDelete = currentText.length() - count;
+                    currentText.delete(startIndexDelete, currentText.length());
+
+                    break;
+
+                case ("3"):
+
+                    int index = Integer.parseInt(command[1]);
+                    System.out.println(currentText.charAt(index - 1));
+
+                    break;
+
+                case ("4"):
+                    if (!stack.isEmpty()) {
+
+                        String last = stack.pop();
+                        currentText = new StringBuilder(last);
+                    }
+
+                    break;
+
             }
 
         }
