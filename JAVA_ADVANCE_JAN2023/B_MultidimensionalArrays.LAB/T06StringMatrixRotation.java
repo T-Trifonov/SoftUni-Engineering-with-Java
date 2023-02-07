@@ -7,149 +7,92 @@ import java.util.regex.Pattern;
 public class T06StringMatrixRotation {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String dimensions = scanner.nextLine();
+        int row = Integer.parseInt(dimensions.split("\\s+")[0]);
+        int col = Integer.parseInt(dimensions.split("\\s+")[1]);
+        int[][] matrix = new int[row][col];
+        int value = 1;
 
-        Map<Integer, String> base = new HashMap<>();
-        int rows = 0;
-        int cols = Integer.MIN_VALUE;
-
-        String rotateCommand = scanner.nextLine();
-
-        int angleOfRotation = rotateDefinition(rotateCommand);
-
-        angleOfRotation = checkRotation(angleOfRotation);
+        for (int r = 0; r < row; r++) {
+            for (int c = 0; c < col; c++) {
+                matrix[r][c] = value + c;
+            }
+            value += col;
+        }
 
         String input = scanner.nextLine();
 
-        while (!input.equals("END")) {
-
-            int tempL = length(input);
-
-            if (tempL > cols) {
-                cols = tempL;
-            }
-
-            base.put(rows, input);
-
+        while (!input.equals("Nuke it from orbit")) {
+            replaceElementsByExplosion(matrix, input);
+            matrix = getMatrixAfterExplosion(matrix);
             input = scanner.nextLine();
-            rows++;
         }
-
-        String[][] matrix = new String[rows][cols];
-
-        fillmatrix(base, matrix);
-
-        if (angleOfRotation == 0 || angleOfRotation == 360) {
-            printMatrix(matrix);
-        } else if (angleOfRotation == 90) {
-            ninetyDegreePrinting(matrix);
-        } else if (angleOfRotation == 180) {
-            hundredAndEightyPrinting(matrix);
-        } else if (angleOfRotation==270) {
-            twoHundredAndSeventyPrinting(matrix);
-        }
-
+        print(matrix);
     }
 
-    private static void twoHundredAndSeventyPrinting(String[][] matrix) {
+    private static int[][] getMatrixAfterExplosion(int[][] matrix) {
+        Map<Integer, List<Integer>> map = new LinkedHashMap<>();
 
-        for (int j = matrix[0].length - 1; j >= 0; j--) {
-            System.out.println();
-            for (int i = 0; i < matrix.length; i++) {
-                System.out.print(matrix[i][j]);
-            }
-        }
+        for (int r = 0; r < matrix.length; r++) {
+            List<Integer> list = new ArrayList<>();
+            int counter = 0;
 
-    }
-
-    private static void hundredAndEightyPrinting(String[][] matrix) {
-
-        for (int i = matrix.length - 1; i >= 0; i--) {
-            System.out.println();
-            for (int j = matrix[0].length - 1; j >= 0; j--) {
-
-                System.out.print(matrix[i][j]);
-            }
-        }
-
-    }
-
-    private static void ninetyDegreePrinting(String[][] matrix) {
-
-        for (int j = 0; j < matrix[0].length; j++) {
-            System.out.println();
-            for (int i = matrix.length - 1; i >= 0; i--) {
-
-                System.out.print(matrix[i][j]);
-            }
-        }
-
-    }
-
-    private static void printMatrix(String[][] matrix) {
-
-        for (int i = 0; i < matrix.length; i++) {
-            System.out.println();
-            for (int j = 0; j < matrix[0].length; j++) {
-                System.out.print(matrix[i][j]);
-
-            }
-        }
-
-    }
-
-    private static void fillmatrix(Map<Integer, String> base, String[][] matrix) {
-
-        String position;
-
-        for (int i = 0; i < matrix.length; i++) {
-            String temp = base.get(i);
-            int length = temp.length();
-            for (int j = 0; j < matrix[0].length; j++) {
-                if (length <= j) {
-                    position = " ";
-                } else {
-                    position = String.valueOf(temp.charAt(j));
+            for (int c = 0; c < matrix[r].length; c++) {
+                if (matrix[r][c] != -1) {
+                    list.add(matrix[r][c]);
                 }
+            }
 
-                matrix[i][j] = position;
+            if (!list.isEmpty()) {
+                map.put(r, list);
+            }
 
+        }
+        matrix = new int[map.size()][];
+        int startIndex = 0;
+        for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
+            matrix[startIndex] = entry.getValue().stream().mapToInt(Integer::intValue).toArray();
+            startIndex++;
+        }
+        return matrix;
+    }
+
+
+    private static void print(int[][] matrix) {
+
+        for (int[] x : matrix) {
+            for (int y : x) {
+                System.out.print(y + " ");
+            }
+            System.out.println();
+        }
+    }
+
+
+    private static boolean AreIndexesValid(int row, int col, int[][] matrix) {
+        return (row >= 0 && row < matrix.length
+                && col >= 0 && col < matrix[row].length);
+    }
+
+    private static void replaceElementsByExplosion(int[][] matrix, String input) {
+        int rowIndex = Integer.parseInt(input.split("\\s+")[0]);
+        int colIndex = Integer.parseInt(input.split("\\s+")[1]);
+        int radius = Integer.parseInt(input.split("\\s+")[2]);
+        //up and down
+        for (int row = rowIndex - radius; row <= rowIndex + radius; row++) {
+            if (AreIndexesValid(row, colIndex, matrix)) {
+                matrix[row][colIndex] = -1;
             }
         }
 
-    }
-
-    private static int length(String input) {
-
-        char[] characters = input.toCharArray();
-
-        return characters.length;
-    }
-
-    private static int checkRotation(int angleOfRotation) {
-
-        while (angleOfRotation > 360) {
-
-            angleOfRotation -= 360;
-
+        //left and right
+        for (int col = colIndex - radius; col <= colIndex + radius; col++) {
+            if (AreIndexesValid(rowIndex, col, matrix)) {
+                matrix[rowIndex][col] = -1;
+            }
         }
 
-        return angleOfRotation;
 
-    }
-
-    private static int rotateDefinition(String command) {
-        int value = 0;
-
-        String patternString = "(?<value>(\\d+))";
-
-        Pattern pattern = Pattern.compile(patternString);
-        Matcher matcher = pattern.matcher(command);
-
-        if (matcher.find()) {
-            value = Integer.parseInt(matcher.group("value"));
-        }
-
-        return value;
     }
 
 }
